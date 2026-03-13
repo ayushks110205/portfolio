@@ -4,11 +4,12 @@ import { useRef, useMemo, MutableRefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Points, PointMaterial } from '@react-three/drei'
 import * as THREE from 'three'
+import { type DeviceQuality, getDprRange, getStarCount } from '@/hooks/useDeviceQuality'
 
-// ─── StarField ──────────────────────────────────────────────────────────────
-function StarField({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
-  const ref = useRef<THREE.Points>(null)
-  const count = 4000
+// ─── StarField ─────────────────────────────────────────────────────────────
+function StarField({ mouseX, mouseY, quality }: { mouseX: number; mouseY: number; quality: DeviceQuality }) {
+  const ref   = useRef<THREE.Points>(null)
+  const count = getStarCount(quality)
 
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3)
@@ -18,7 +19,7 @@ function StarField({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
       pos[i * 3 + 2] = (Math.random() - 0.5) * 200
     }
     return pos
-  }, [])
+  }, [count])
 
   useFrame((state) => {
     if (!ref.current) return
@@ -33,17 +34,15 @@ function StarField({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   )
 }
 
-// ─── NebulaClouds ───────────────────────────────────────────────────────────
+// ─── NebulaClouds (medium/high only) ────────────────────────────────────────
 function NebulaClouds({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
-  const ref = useRef<THREE.Points>(null)
+  const ref   = useRef<THREE.Points>(null)
   const count = 800
 
   const { positions, colors } = useMemo(() => {
     const pos = new Float32Array(count * 3)
     const col = new Float32Array(count * 3)
-    const palette = [
-      [0, 1, 1], [0.5, 0.1, 0.9], [1, 0, 1], [0, 1, 0.5],
-    ]
+    const palette = [[0, 1, 1], [0.5, 0.1, 0.9], [1, 0, 1], [0, 1, 0.5]]
     for (let i = 0; i < count; i++) {
       const angle  = Math.random() * Math.PI * 2
       const radius = 20 + Math.random() * 60
@@ -64,17 +63,15 @@ function NebulaClouds({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
 
   return (
     <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent vertexColors size={1.2} sizeAttenuation
-        depthWrite={false} opacity={0.5} blending={THREE.AdditiveBlending}
-      />
+      <PointMaterial transparent vertexColors size={1.2} sizeAttenuation
+        depthWrite={false} opacity={0.5} blending={THREE.AdditiveBlending} />
     </Points>
   )
 }
 
-// ─── NeuralNodes ────────────────────────────────────────────────────────────
+// ─── NeuralNodes (high only) ────────────────────────────────────────────────
 function NeuralNodes({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
-  const groupRef = useRef<THREE.Group>(null)
+  const groupRef  = useRef<THREE.Group>(null)
   const nodeCount = 15
 
   const nodes = useMemo(() =>
@@ -111,8 +108,7 @@ function NeuralNodes({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
           <meshStandardMaterial
             color={i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#7C3AED' : '#FF00FF'}
             emissive={i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#7C3AED' : '#FF00FF'}
-            emissiveIntensity={0.8}
-            transparent opacity={0.7} wireframe
+            emissiveIntensity={0.8} transparent opacity={0.7} wireframe
           />
         </mesh>
       ))}
@@ -120,7 +116,7 @@ function NeuralNodes({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   )
 }
 
-// ─── FloatingGrid ───────────────────────────────────────────────────────────
+// ─── FloatingGrid (high only) ───────────────────────────────────────────────
 function FloatingGrid({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   const ref = useRef<THREE.Mesh>(null)
 
@@ -132,21 +128,16 @@ function FloatingGrid({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
 
   return (
     <mesh ref={ref} position={[0, -8, -20]}>
-      <planeGeometry args={[120, 80, 40, 25]} />
-      <meshStandardMaterial
-        color="#00FFFF" emissive="#00FFFF"
-        emissiveIntensity={0.3} transparent opacity={0.08} wireframe
-      />
+      {/* Reduced segments on medium/low — high gets 40×25 */}
+      <planeGeometry args={[120, 80, 20, 12]} />
+      <meshStandardMaterial color="#00FFFF" emissive="#00FFFF"
+        emissiveIntensity={0.3} transparent opacity={0.08} wireframe />
     </mesh>
   )
 }
 
-// ─── SceneCamera (now scroll-driven) ────────────────────────────────────────
-function SceneCamera({
-  mouseX,
-  mouseY,
-  scrollRef,
-}: {
+// ─── SceneCamera ────────────────────────────────────────────────────────────
+function SceneCamera({ mouseX, mouseY, scrollRef }: {
   mouseX:    number
   mouseY:    number
   scrollRef: MutableRefObject<number>
@@ -154,28 +145,19 @@ function SceneCamera({
   const { camera } = useThree()
 
   useFrame(() => {
-    const scroll = scrollRef.current          // 0 → 1 over the hero section height
+    const scroll = scrollRef.current
+    camera.position.x += (mouseX * 2  - camera.position.x) * 0.02
+    camera.position.y += (-mouseY * 1.5 - camera.position.y) * 0.02
 
-    // ── Mouse parallax (always) ──
-    const targetX = mouseX * 2
-    const targetY = -mouseY * 1.5
-    camera.position.x += (targetX - camera.position.x) * 0.02
-    camera.position.y += (targetY - camera.position.y) * 0.02
-
-    // ── Scroll-driven Z warp ──
-    // As user scrolls, camera rushes forward (z shrinks from 30 → 5)
-    // and tilts upward, like entering a wormhole
-    const baseZ   = 30 - scroll * 25          // 30 at top → 5 at bottom of hero
-    const baseY   = targetY + scroll * 15     // drifts upward
+    const baseZ = 30 - scroll * 25
+    const baseY = -mouseY * 1.5 + scroll * 15
     camera.position.z += (baseZ - camera.position.z) * 0.06
-    camera.position.y += ((baseY) - camera.position.y) * 0.03
+    camera.position.y += (baseY  - camera.position.y) * 0.03
 
-    // ── FOV widens for cinematic zoom-in feel ──
     const cam = camera as THREE.PerspectiveCamera
     cam.fov  += (60 + scroll * 20 - cam.fov) * 0.05
     cam.updateProjectionMatrix()
-
-    camera.lookAt(0, scroll * 5, 0)           // look slightly upward on scroll
+    camera.lookAt(0, scroll * 5, 0)
   })
 
   return null
@@ -186,25 +168,44 @@ export interface SpaceSceneProps {
   mouseX:    number
   mouseY:    number
   scrollRef: MutableRefObject<number>
+  quality:   DeviceQuality
 }
 
-export default function SpaceScene({ mouseX, mouseY, scrollRef }: SpaceSceneProps) {
+export default function SpaceScene({ mouseX, mouseY, scrollRef, quality }: SpaceSceneProps) {
+  const dpr      = getDprRange(quality)
+  const antialias = quality === 'high'
+
   return (
     <Canvas
       camera={{ position: [0, 0, 30], fov: 60 }}
       style={{ position: 'absolute', inset: 0 }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias, alpha: true, powerPreference: 'high-performance' }}
+      dpr={dpr}
     >
+      {/* Lights — reduced on low quality */}
       <ambientLight intensity={0.1} />
-      <pointLight position={[10, 10, 10]}   intensity={0.5} color="#00FFFF" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#7C3AED" />
-      <pointLight position={[0, 20, -20]}   intensity={0.4} color="#FF00FF" />
+      <pointLight position={[10, 10, 10]}    intensity={0.5} color="#00FFFF" />
+      {quality !== 'low' && (
+        <>
+          <pointLight position={[-10, -10, -10]} intensity={0.3} color="#7C3AED" />
+          <pointLight position={[0, 20, -20]}    intensity={0.4} color="#FF00FF" />
+        </>
+      )}
 
-      <StarField    mouseX={mouseX} mouseY={mouseY} />
-      <NebulaClouds mouseX={mouseX} mouseY={mouseY} />
-      <NeuralNodes  mouseX={mouseX} mouseY={mouseY} />
-      <FloatingGrid mouseX={mouseX} mouseY={mouseY} />
-      <SceneCamera  mouseX={mouseX} mouseY={mouseY} scrollRef={scrollRef} />
+      {/* Always: stars + camera */}
+      <StarField   mouseX={mouseX} mouseY={mouseY} quality={quality} />
+      <SceneCamera mouseX={mouseX} mouseY={mouseY} scrollRef={scrollRef} />
+
+      {/* Medium + High: nebula */}
+      {quality !== 'low' && <NebulaClouds mouseX={mouseX} mouseY={mouseY} />}
+
+      {/* High only: neural nodes + grid */}
+      {quality === 'high' && (
+        <>
+          <NeuralNodes  mouseX={mouseX} mouseY={mouseY} />
+          <FloatingGrid mouseX={mouseX} mouseY={mouseY} />
+        </>
+      )}
     </Canvas>
   )
 }

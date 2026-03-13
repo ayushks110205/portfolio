@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useDeviceQuality } from '@/hooks/useDeviceQuality'
 
 const SpaceScene = dynamic(() => import('@/components/three/SpaceScene'), { ssr: false })
 
@@ -49,7 +50,8 @@ const MagneticButton = ({ children, className, onClick }: {
 export default function HeroSection() {
   const [mouseX, setMouseX] = useState(0)
   const [mouseY, setMouseY] = useState(0)
-  const scrollRef    = useRef(0)            // <- shared with SpaceScene via R3F
+  const quality   = useDeviceQuality()
+  const scrollRef = useRef(0)
   const sectionRef   = useRef<HTMLElement>(null)
   const titleRef     = useRef<HTMLHeadingElement>(null)
   const subtitleRef  = useRef<HTMLParagraphElement>(null)
@@ -106,7 +108,7 @@ export default function HeroSection() {
       {/* 3D Canvas Background */}
       <div className="absolute inset-0 z-0">
         <Suspense fallback={<div className="absolute inset-0 bg-[#020408]" />}>
-          <SpaceScene mouseX={mouseX} mouseY={mouseY} scrollRef={scrollRef} />
+          <SpaceScene mouseX={mouseX} mouseY={mouseY} scrollRef={scrollRef} quality={quality} />
         </Suspense>
       </div>
 

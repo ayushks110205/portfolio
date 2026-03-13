@@ -8,6 +8,8 @@ import ProjectsSection from '@/components/sections/ProjectsSection'
 import SkillsSection from '@/components/sections/SkillsSection'
 import AboutSection from '@/components/sections/AboutSection'
 import ContactSection from '@/components/sections/ContactSection'
+import { useInfiniteTouchLoop } from '@/hooks/useInfiniteTouchLoop'
+import { useScrollSnap } from '@/hooks/useScrollSnap'
 
 // ─── Loading Screen ────────────────────────────────────────────────────────
 function LoadingScreen({ onComplete }: { onComplete: () => void }) {
@@ -95,6 +97,9 @@ export default function HomePage() {
   const [loaded, setLoaded] = useState(false)
   const loopLock            = useRef(false)
 
+  // ── Feature hooks (activate after loading completes) ──
+  useInfiniteTouchLoop(loaded)   // mobile swipe boundary loop
+  useScrollSnap(loaded)          // GSAP section-snap on desktop
   // ── Bidirectional infinite loop ──
   useEffect(() => {
     if (!loaded) return
