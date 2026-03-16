@@ -5,28 +5,46 @@ import { motion } from 'framer-motion'
 
 const skillCategories = [
   {
-    name: 'Programming',
+    name: 'Languages',
     color: '#00FFFF',
     icon: '⬡',
-    skills: ['Python', 'Java', 'C', 'JavaScript', 'TypeScript'],
+    skills: ['Python', 'Java', 'C', 'JavaScript', 'HTML', 'TypeScript'],
+  },
+  {
+    name: 'Databases',
+    color: '#38BDF8',
+    icon: '⬠',
+    skills: ['MySQL'],
   },
   {
     name: 'Frameworks',
     color: '#A78BFA',
     icon: '⬢',
-    skills: ['React', 'Next.js', 'TailwindCSS'],
+    skills: ['React', 'Next.js', 'Tailwind CSS', 'Pandas', 'NumPy', 'Matplotlib', 'Scikit-learn'],
   },
   {
-    name: 'Libraries',
-    color: '#00FF88',
+    name: 'Machine Learning',
+    color: '#F472B6',
     icon: '◈',
-    skills: ['Pandas', 'NumPy', 'Matplotlib', 'Scikit-learn'],
+    skills: ['Data Preprocessing', 'Feature Engineering', 'Model Training', 'Model Evaluation'],
   },
   {
-    name: 'Concepts',
-    color: '#FF6B6B',
+    name: 'Algorithms',
+    color: '#FBBF24',
+    icon: '◇',
+    skills: ['A* Search Algorithm', 'Heuristic Search', 'Problem Solving'],
+  },
+  {
+    name: 'Dev Tools',
+    color: '#34D399',
     icon: '◆',
-    skills: ['Machine Learning', 'Data Preprocessing', 'Feature Engineering', 'Model Evaluation', 'Responsive Design', 'Progressive Web Apps'],
+    skills: ['Git', 'GitHub', 'Visual Studio Code', 'Vercel'],
+  },
+  {
+    name: 'Cloud & Concepts',
+    color: '#FF6B6B',
+    icon: '✦',
+    skills: ['Microsoft Azure', 'Responsive Web Design', 'Progressive Web Apps', 'UI/UX Design'],
   },
 ]
 
